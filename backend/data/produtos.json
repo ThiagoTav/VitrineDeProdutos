@@ -1,0 +1,14 @@
+[
+  {
+    "nome": "Caneca",
+    "descricao": "Caneca de cerâmica 300ml",
+    "preco": 29.9,
+    "imagemUrl": "/images/caneca.jpg"
+  },
+  {
+    "nome": "Camiseta",
+    "descricao": "Camiseta 100% algodão",
+    "preco": 49.9,
+    "imagemUrl": "/images/camiseta.jpg"
+  }
+]
