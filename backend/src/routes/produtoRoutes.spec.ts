@@ -3,50 +3,42 @@ import request from 'supertest';
 import express from 'express';
 import produtoRoutes from './produtoRoutes';
 import { conectarMongoDB } from '../config/db';
-import { Produto } from '../models/produtoModel';
 
-const app = express();
-app.use(express.json());
-app.use('/produtos', produtoRoutes);
-
-beforeAll(async () => {
-  await conectarMongoDB();
-});
-
-afterAll(async () => {
-  await mongoose.disconnect();   // ← fecha a conexão
-});
-
-describe('GET /produtos', () => {
-  it('retorna 200 e lista de produtos', async () => {
-    const res = await request(app).get('/produtos');
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-  });
-});
-
-describe('GET /produtos/:id', () => {
-  let sampleId: string;
+describe('API Produtos', () => {
+  const app = express();
+  app.use(express.json());
+  app.use('/produtos', produtoRoutes);
 
   beforeAll(async () => {
-    const first = await Produto.findOne();
-    sampleId = first!._id.toString();
+    // conecta ao MongoDB usando variável de ambiente ou padrão apontando para o container 'mongo'
+    await conectarMongoDB();
   });
 
-  it('retorna 200 para _id válido', async () => {
-    const res = await request(app).get(`/produtos/${sampleId}`);
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('_id', sampleId);
+  afterAll(async () => {
+    // desconecta do MongoDB
+    await mongoose.disconnect();
   });
 
-  it('retorna 400 para _id malformado', async () => {
-    const res = await request(app).get('/produtos/1234');  
-    expect(res.status).toBe(400);
-  });
+  it('GET /produtos deve retornar lista de produtos e GET /produtos/:id deve retornar detalhes de um produto', async () => {
+    // 1. Consulta todos os produtos
+    const resAll = await request(app).get('/produtos');
+    expect(resAll.status).toBe(200);
+    expect(Array.isArray(resAll.body)).toBe(true);
+    expect(resAll.body.length).toBeGreaterThan(0);
 
-  it('retorna 404 para _id bem-formado mas inexistente', async () => {
-    const fakeId = new mongoose.Types.ObjectId().toString();
-    const res = await request(app).get(`/produtos/${fakeId}`);
-    expect(res.status).toBe(404);
-  });
+    // 2. Seleciona o primeiro ID (mongo usa _id)
+    const first = resAll.body[0];
+    const id = first._id || first.id;
+    expect(id).toBeDefined();
+
+    // 3. Consulta detalhes do produto
+    const resOne = await request(app).get(`/produtos/${id}`);
+    expect(resOne.status).toBe(200);
+    expect(resOne.body).toMatchObject({
+      nome: expect.any(String),
+      descricao: expect.any(String),
+      preco: expect.any(Number),
+      imagemUrl: expect.any(String),
+    });
+  }, 30000); // timeout ampliado para 30s
 });

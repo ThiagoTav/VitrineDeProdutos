@@ -29,5 +29,14 @@ services:
     depends_on:
       - backend
 
+
+  tests:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+    command: ["npm", "test"]
+    
 volumes:
   mongodb_data:
