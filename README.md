@@ -65,12 +65,17 @@ Isso irá:
 ```
 .
 ├── backend/
+│   ├── data/           # json com produtos para popular banco de dados
 │   ├── src/
 │   │   ├── routes/
 │   │   ├── models/
 │   │   └── controllers/
+│   │   ├── config/
+│   │   ├── services/
+│   │   └── types/
+│   │   └── middlewares/
 │   ├── seed.js           # Popula o banco com produtos
-│   └── server.ts
+│   └── index.ts
 ├── frontend/
 │   └── src/app/
 │       ├── page.tsx          # Home
